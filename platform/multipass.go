@@ -184,10 +184,6 @@ func (vm Multipass) BraveBackendInit() error {
 	fmt.Println("Installing required software ...")
 	time.Sleep(10 * time.Second)
 
-	timestamp := time.Now()
-	storagePoolName := vm.Settings.Profile + "-" + timestamp.Format("20060102150405")
-	vm.Settings.StoragePool.Name = storagePoolName
-
 	err = UpdateBraveSettings(vm.Settings)
 	if err != nil {
 		return errors.New("failed update settings" + err.Error())

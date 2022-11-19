@@ -105,9 +105,7 @@ func SetupHostConfiguration(params HostConfig, userHome string) (settings HostSe
 		log.Fatalf(err.Error())
 	}
 
-	timestamp := time.Now()
-	storagePoolName := hostName + "-" + timestamp.Format("20060102150405")
-
+	storagePoolName := hostName
 	networkBridgeName := hostName + "br0"
 
 	settings = HostSettings{
