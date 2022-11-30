@@ -80,14 +80,7 @@ type Bravefile struct {
 // NewBravefile ..
 func NewBravefile() *Bravefile {
 
-	return &Bravefile{
-		PlatformService: Service{
-			Resources: Resources{
-				CPU: DefaultUnitCpuLimit,
-				RAM: DefaultUnitRamLimit,
-			},
-		},
-	}
+	return &Bravefile{}
 }
 
 // Load loads Bravefile
