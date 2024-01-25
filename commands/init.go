@@ -21,6 +21,7 @@ var hostInit = &cobra.Command{
 }
 
 var hostConfigPath, storage, ram, network, backendType string
+var remoteInit bool
 
 func init() {
 	includeInitFlags(hostInit)
@@ -31,6 +32,13 @@ func includeInitFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVarP(&storage, "storage", "s", "12", "Host storage size in GB[OPTIONAL]. default: 12")
 	cmd.PersistentFlags().StringVarP(&ram, "memory", "m", "4GB", "Host memory size [OPTIONAL]. default 4GB")
 	cmd.PersistentFlags().StringVarP(&network, "network", "n", "", "Host network IP range [OPTIONAL]. default: randomly generate RFC1918 address")
+
+	cmd.PersistentFlags().BoolVar(&remoteInit, "remote", false, "Whether this backend is a remote.")
+	cmd.PersistentFlags().StringVar(&remoteArgs.URL, "remote-url", "", "Remote URL.")
+	cmd.PersistentFlags().StringVar(&remoteArgs.Profile, "remote-profile", "default", "Name of LXD profile to use with this remote.")
+	cmd.PersistentFlags().StringVar(&remoteArgs.Network, "remote-network", "lxdbr0", "LXD-managed bridge to use for networking containers")
+	cmd.PersistentFlags().StringVar(&remoteArgs.Storage, "remote-storage", "default", "Name of LXD storage pool to use for container")
+	cmd.PersistentFlags().StringVar(&remotePassword, "remote-password", "", "Trusted password to use when communicating with remote")
 }
 
 func serverInit(cmd *cobra.Command, args []string) {
@@ -41,19 +49,23 @@ func serverInit(cmd *cobra.Command, args []string) {
 	}
 
 	hostOs := runtime.GOOS
-	switch hostOs {
-	case "linux":
-		backendType = "lxd"
-	case "darwin":
-		backendType = "multipass"
-	case "windows":
-		backendType = "multipass"
-	default:
-		err := deleteBraveHome(userHome)
-		if err != nil {
-			fmt.Println(err.Error())
+	if remoteInit {
+		backendType = "remote"
+	} else {
+		switch hostOs {
+		case "linux":
+			backendType = "lxd"
+		case "darwin":
+			backendType = "multipass"
+		case "windows":
+			backendType = "multipass"
+		default:
+			err := deleteBraveHome(userHome)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			log.Fatal("unsupported host OS: ", hostOs)
 		}
-		log.Fatal("unsupported host OS: ", hostOs)
 	}
 
 	if network == "" {
