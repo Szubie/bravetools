@@ -626,6 +626,14 @@ func bravefileCopy(ctx context.Context, lxdServer lxd.InstanceServer, copy []sha
 		}
 
 		if fi.IsDir() {
+			target = path.Join(target, filepath.Base(sourcePath))
+		}
+		_, err = Exec(ctx, lxdServer, service, []string{"mkdir", "-p", target}, ExecArgs{})
+		if err != nil {
+			return errors.New("Failed to create target directory: " + err.Error())
+		}
+
+		if fi.IsDir() {
 			err = Push(lxdServer, service, sourcePath, target)
 			if err != nil {
 				return errors.New("Failed to push directory: " + err.Error())
