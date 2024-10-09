@@ -615,17 +615,18 @@ func bravefileCopy(ctx context.Context, lxdServer lxd.InstanceServer, copy []sha
 		sourcePath := filepath.Join(dir, source)
 
 		target := c.Target
-		if !strings.HasSuffix(c.Source, "/") {
-			target = path.Join(target, filepath.Base(sourcePath))
-		}
-		_, err := Exec(ctx, lxdServer, service, []string{"mkdir", "-p", target}, ExecArgs{})
-		if err != nil {
-			return errors.New("Failed to create target directory: " + err.Error())
-		}
 
 		fi, err := os.Lstat(sourcePath)
 		if err != nil {
 			return errors.New("Failed to read file " + sourcePath + ": " + err.Error())
+		}
+
+		if fi.IsDir() {
+			target = path.Join(target, filepath.Base(sourcePath))
+		}
+		_, err = Exec(ctx, lxdServer, service, []string{"mkdir", "-p", target}, ExecArgs{})
+		if err != nil {
+			return errors.New("Failed to create target directory: " + err.Error())
 		}
 
 		if fi.IsDir() {
