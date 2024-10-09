@@ -612,10 +612,12 @@ func bravefileCopy(ctx context.Context, lxdServer lxd.InstanceServer, copy []sha
 		}
 
 		source := c.Source
-		source = path.Join(dir, source)
-		sourcePath := filepath.FromSlash(source)
+		sourcePath := filepath.Join(dir, source)
 
 		target := c.Target
+		if !strings.HasSuffix(c.Source, "/") {
+			target = path.Join(target, filepath.Base(sourcePath))
+		}
 		_, err := Exec(ctx, lxdServer, service, []string{"mkdir", "-p", target}, ExecArgs{})
 		if err != nil {
 			return errors.New("Failed to create target directory: " + err.Error())
@@ -629,12 +631,12 @@ func bravefileCopy(ctx context.Context, lxdServer lxd.InstanceServer, copy []sha
 		if fi.IsDir() {
 			err = Push(lxdServer, service, sourcePath, target)
 			if err != nil {
-				return errors.New("Failed to push symlink: " + err.Error())
+				return errors.New("Failed to push directory: " + err.Error())
 			}
 		} else if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
 			err = SymlinkPush(lxdServer, service, sourcePath, target)
 			if err != nil {
-				return errors.New("Failed to push directory: " + err.Error())
+				return errors.New("Failed to push symlink: " + err.Error())
 			}
 		} else {
 			err = FilePush(lxdServer, service, sourcePath, target)
